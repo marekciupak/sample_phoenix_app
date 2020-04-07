@@ -131,9 +131,29 @@ jobs:
           root: ~/app
           paths: _build/prod/rel/my_app.tar.gz
 
+  upload_release:
+    working_directory: ~/app
+    docker:
+      - image: circleci/buildpack-deps:latest
+    steps:
+      - attach_workspace:
+          at: ~/app
+      # TODO: Upload release package to a persisted storage (s3 or target server)
+      - run:
+          name: Proof of concept - package with the release is ready to be uploaded...
+          command: ls -la _build/prod/rel/my_app.tar.gz
+
 workflows:
   version: 2
   build_test_release:
     jobs:
       - build_and_test
-      - build_release
+      - build_release:
+          filters:
+            branches:
+              only:
+                - master
+      - upload_release:
+          requires:
+            - build_and_test
+            - build_release
