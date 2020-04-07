@@ -20,34 +20,35 @@ jobs:
           command: mix local.rebar --force
       - restore_cache:
           keys:
-            - deps-test-v1-{{ .Branch }}-{{ checksum "mix.lock" }}
-            - deps-test-v1-{{ .Branch }}
-            - deps-test-v1
+            - deps-test-v2-{{ .Branch }}-{{ checksum "mix.lock" }}
+            - deps-test-v2-{{ .Branch }}
+            - deps-test-v2
       - run:
           name: Install Mix's dependencies
           command: mix deps.get
       - save_cache:
-          key: deps-test-v1-{{ .Branch }}-{{ checksum "mix.lock" }}
+          key: deps-test-v2-{{ .Branch }}-{{ checksum "mix.lock" }}
           paths: deps
       - restore_cache:
           keys:
-            - build-test-v1-{{ .Branch }}
-            - build-test-v1-
+            - build-test-v2-{{ .Branch }}
+            - build-test-v2-
       - run:
           name: Compile Elixir's source files
           command: mix compile
       - save_cache:
-          key: build-test-v1-{{ .Branch }}
+          key: build-test-v2-{{ .Branch }}
           paths: _build
       - restore_cache:
           keys:
-            - node-v1-{{ checksum "assets/package-lock.json" }}
-            - node-v1-
+            - node-v2-{{ .Branch }}-{{ checksum "assets/package-lock.json" }}
+            - node-v2-{{ .Branch }}
+            - node-v2-
       - run:
           name: Install Node.js's modules
           command: cd assets && npm install
       - save_cache:
-          key: node-v1-{{ checksum "assets/package-lock.json" }}
+          key: node-v2-{{ .Branch }}-{{ checksum "assets/package-lock.json" }}
           paths:
             - assets/node_modules
       - run:
@@ -78,38 +79,39 @@ jobs:
           command: mix local.rebar --force
       - restore_cache:
           keys:
-            - deps-prod-v1-{{ .Branch }}-{{ checksum "mix.lock" }}
-            - deps-prod-v1-{{ .Branch }}
-            - deps-prod-v1
+            - deps-prod-v2-{{ .Branch }}-{{ checksum "mix.lock" }}
+            - deps-prod-v2-{{ .Branch }}
+            - deps-prod-v2
       - run:
           name: Install Mix's dependencies
           command: mix deps.get --only prod
       - save_cache:
-          key: deps-prod-v1-{{ .Branch }}-{{ checksum "mix.lock" }}
+          key: deps-prod-v2-{{ .Branch }}-{{ checksum "mix.lock" }}
           paths: deps
       - restore_cache:
           keys:
-            - build-prod-v1-{{ .Branch }}
-            - build-prod-v1-
+            - build-prod-v2-{{ .Branch }}
+            - build-prod-v2-
       - run:
           name: Compile Elixir's source files
           command: mix compile
       - save_cache:
-          key: build-prod-v1-{{ .Branch }}
+          key: build-prod-v2-{{ .Branch }}
           paths: _build
       - restore_cache:
           keys:
-            - node-v1-{{ checksum "assets/package-lock.json" }}
-            - node-v1-
+            - node-v2-{{ .Branch }}-{{ checksum "assets/package-lock.json" }}
+            - node-v2-{{ checksum "assets/package-lock.json" }}
+            - node-v2-
       - run:
           name: Install Node.js's modules
           command: cd assets && npm install
       - save_cache:
-          key: node-v1-{{ checksum "assets/package-lock.json" }}
+          key: node-v2-{{ .Branch }}-{{ checksum "assets/package-lock.json" }}
           paths: assets/node_modules
       - restore_cache:
           keys:
-            - release-v1
+            - static-prod-v2
       - run:
           name: Compile assets
           command: npm run deploy --prefix ./assets
@@ -117,14 +119,14 @@ jobs:
           name: Digests and compresses static files
           command: mix phx.digest
       - save_cache:
-          key: release-v1
+          key: static-prod-v2
           paths: priv/static
       - run:
           name: Assemble a self-contained release
           command: mix release
       - run:
           name: Compress a self-contained release
-          command: tar -czf _build/prod/rel/my_app.tar.gz _build/prod/rel/my_app/
+          command: cd _build/prod/rel/ && tar -czvf my_app.tar.gz my_app/
       - persist_to_workspace:
           root: ~/app
           paths: _build/prod/rel/my_app.tar.gz
