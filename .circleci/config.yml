@@ -126,22 +126,21 @@ jobs:
           command: mix release
       - run:
           name: Compress a self-contained release
-          command: cd _build/prod/rel/ && tar -czvf my_app.tar.gz my_app/
+          command: tar -czvf _build/prod/rel/my_app.tar.gz -C _build/prod/rel/my_app/ .
       - persist_to_workspace:
-          root: ~/app
-          paths: _build/prod/rel/my_app.tar.gz
+          root: _build/prod/
+          paths: rel/my_app.tar.gz
 
-  upload_release:
-    working_directory: ~/app
+  store_release:
+    working_directory: ~/workspace
     docker:
       - image: circleci/buildpack-deps:latest
     steps:
       - attach_workspace:
-          at: ~/app
-      # TODO: Upload release package to a persisted storage (s3 or target server)
-      - run:
-          name: Proof of concept - package with the release is ready to be uploaded...
-          command: ls -la _build/prod/rel/my_app.tar.gz
+          at: .
+      - store_artifacts:
+          path: rel/
+          destination: rel
 
 workflows:
   version: 2
@@ -153,7 +152,7 @@ workflows:
             branches:
               only:
                 - master
-      - upload_release:
+      - store_release:
           requires:
             - build_and_test
             - build_release
